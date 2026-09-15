@@ -1,0 +1,30 @@
+team_name: "PORT VISION"
+
+project_name: "PORT VISION"
+
+description: "An AI-powered vision-based solution designed to identify and analyze objects or situations through computer vision."
+
+problem_statement: "Manual monitoring and identification can be time-consuming and inefficient. PORT VISION aims to provide an intelligent vision-based solution that can analyze visual information and assist users with faster and smarter decision-making."
+
+solution: "PORT VISION uses AI and computer vision to process visual information, detect relevant objects or situations, and provide useful results to the user."
+
+key_features:
+  - "AI-powered image/video analysis"
+  - "Computer vision based detection"
+  - "Fast and automated analysis"
+  - "User-friendly interface"
+  - "Real-time or near real-time results"
+
+technology:
+  - "Artificial Intelligence"
+  - "Computer Vision"
+  - "Python"
+  - "Machine Learning"
+
+team_members:
+  - "Member 1"
+  - "Member 2"
+  - "Member 3"
+  - "Member 4"
+
+demo_video: "See demo/demo-video-link.txt"
