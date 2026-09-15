@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PortVision AI — Port Operations & Congestion Optimizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2d;--panel2:#10243a;--text:#eaf3ff;--muted:#8fa8c3;
+  --cyan:#32d8ff;--blue:#4e8cff;--green:#35e09b;--orange:#ffb84d;--red:#ff5c7a;
+  --line:rgba(255,255,255,.09);--shadow:0 20px 60px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:'Inter',Segoe UI,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(50,216,255,.12),transparent 30%),
+    radial-gradient(circle at 90% 0%,rgba(78,140,255,.13),transparent 28%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+button{font:inherit}
+.app{display:flex;min-height:100vh}
+.side{
+  width:255px;padding:24px 16px;border-right:1px solid var(--line);
+  background:rgba(5,14,27,.82);backdrop-filter:blur(16px);
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+}
+.logo{
+  display:flex;gap:12px;align-items:center;font-weight:800;font-size:20px;
+  margin-bottom:32px;letter-spacing:-0.02em;
+}
+.logoMark{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  display:grid;place-items:center;box-shadow:0 0 30px rgba(50,216,255,.3);
+  font-size:20px;
+}
+.nav{flex:1}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;
+  margin:6px 0;text-align:left;border:0;border-radius:12px;
+  background:transparent;color:var(--muted);cursor:pointer;
+  font-weight:500;transition:all .2s ease;
+}
+.nav button:hover{background:rgba(50,216,255,.08);color:var(--text)}
+.nav button.active{
+  background:rgba(50,216,255,.12);color:var(--text);
+  font-weight:600;box-shadow:inset 3px 0 0 var(--cyan);
+}
+.status{
+  padding:14px;border:1px solid var(--line);border-radius:14px;
+  background:var(--panel);margin-top:auto;
+}
+.dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 12px var(--green);margin-right:7px;
+}
+.main{flex:1;padding:28px 36px;max-width:1500px;margin:0 auto;width:100%}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+h1{margin:0;font-size:30px;letter-spacing:-0.03em}
+.sub{color:var(--muted);margin-top:7px;font-size:14px}
+.actions{display:flex;gap:10px}
+.btn{
+  border:1px solid var(--line);background:var(--panel);color:var(--text);
+  padding:11px 16px;border-radius:11px;cursor:pointer;font-weight:600;
+  display:inline-flex;align-items:center;gap:8px;transition:all .2s ease;
+}
+.btn:hover{background:var(--panel2);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
+.btn.primary{
+  background:linear-gradient(135deg,#1f9fca,#416eea);border:0;
+  box-shadow:0 8px 24px rgba(50,216,255,.25);
+}
+.btn.primary:hover{box-shadow:0 10px 28px rgba(50,216,255,.35);filter:brightness(1.08)}
+.btn.danger-action{background:rgba(255,92,122,.15);border-color:rgba(255,92,122,.3);color:var(--red)}
+
+.page{display:none}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(5,1fr)}
+.card{
+  background:linear-gradient(180deg,rgba(16,36,58,.92),rgba(9,24,40,.92));
+  border:1px solid var(--line);border-radius:17px;padding:20px;
+  box-shadow:var(--shadow);position:relative;
+}
+.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.value{font-size:28px;font-weight:800;margin-top:9px;letter-spacing:-0.02em;transition:color .3s}
+.tiny{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.4}
+.green{color:var(--green)}
+.orange{color:var(--orange)}
+.red{color:var(--red)}
+.cyan{color:var(--cyan)}
+.two{grid-template-columns:1.35fr .65fr;margin-top:16px}
+.three{grid-template-columns:1fr 1fr 1fr;margin-top:16px}
+.card h2{font-size:17px;margin:0 0 15px;display:flex;align-items:center;justify-content:space-between}
+
+/* Map */
+.map{
+  height:380px;position:relative;overflow:hidden;
+  background:
+    linear-gradient(rgba(50,216,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(50,216,255,.04) 1px,transparent 1px);
+  background-size:45px 45px;border-radius:13px;border:1px solid rgba(50,216,255,.1);
+}
+.sea{position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(32,94,148,.25),transparent 65%)}
+.route{
+  position:absolute;height:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  transform-origin:left;border-radius:5px;box-shadow:0 0 14px rgba(50,216,255,.6);
+}
+.route.pulse{animation:routeGlow 3s ease-in-out infinite}
+@keyframes routeGlow{0%,100%{opacity:.7}50%{opacity:1;box-shadow:0 0 20px rgba(50,216,255,.9)}}
+
+.node{
+  position:absolute;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  background:#0b2036;border:2px solid var(--cyan);box-shadow:0 0 25px rgba(50,216,255,.3);
+  font-size:20px;cursor:pointer;transition:all .2s;
+}
+.node:hover{transform:scale(1.1);box-shadow:0 0 35px rgba(50,216,255,.5)}
+.node span{position:absolute;top:52px;white-space:nowrap;font-size:11px;color:var(--muted);font-weight:600}
+.ship{position:absolute;font-size:24px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* Alerts & Bars */
+.alert{
+  padding:14px 16px;border-radius:12px;background:rgba(255,92,122,.08);
+  border:1px solid rgba(255,92,122,.25);margin-bottom:12px;font-size:13px;line-height:1.45;
+  transition:all .3s ease;
+}
+.alert b{display:block;margin-bottom:4px;font-size:13px}
+.bar{height:9px;border-radius:10px;background:#142b43;overflow:hidden;margin-top:10px}
+.fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:width .6s ease}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+tr:hover td{background:rgba(255,255,255,.02)}
+.pill{
+  padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  background:rgba(53,224,155,.12);color:var(--green);display:inline-block;
+}
+.pill.warn{background:rgba(255,184,77,.12);color:var(--orange)}
+.pill.danger{background:rgba(255,92,122,.12);color:var(--red)}
+.pill-btn{border:0;cursor:pointer;transition:transform .15s ease,filter .15s ease}
+.pill-btn:hover{transform:scale(1.05);filter:brightness(1.2)}
+
+/* Timeline */
+.timeline{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-top:14px}
+.slot{
+  height:62px;border-radius:8px;background:#12283e;position:relative;
+  cursor:pointer;transition:transform .2s ease;border:1px solid rgba(255,255,255,.05);
+}
+.slot:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.slot.busy{background:linear-gradient(180deg,#155a73,#12354f);border-color:rgba(50,216,255,.3)}
+.slot.hot{background:linear-gradient(180deg,#7a283e,#3e1c28);border-color:rgba(255,92,122,.4)}
+.slot small{position:absolute;bottom:6px;left:6px;color:#b9d1e8;font-size:10px;font-weight:600}
+.slot .tag{position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;opacity:.8}
+
+.kpi{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.circle{
+  width:76px;height:76px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--cyan) 0 87%,#173047 87%);position:relative;
+}
+.circle:after{content:"";position:absolute;width:60px;height:60px;border-radius:50%;background:var(--panel2)}
+.circle b{position:relative;z-index:1;font-size:16px}
+
+/* Chat */
+.chat{height:520px;display:flex;flex-direction:column}
+.messages{flex:1;overflow-y:auto;padding-right:6px}
+.msg{max-width:85%;padding:13px 16px;border-radius:14px;margin:10px 0;line-height:1.5;font-size:13.5px}
+.ai{background:#112942;border:1px solid var(--line);border-top-left-radius:4px}
+.user{margin-left:auto;background:linear-gradient(135deg,#1c5d83,#2a51a1);border-top-right-radius:4px}
+.quick-prompts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{
+  background:rgba(50,216,255,.1);border:1px solid rgba(50,216,255,.25);color:var(--cyan);
+  padding:6px 12px;border-radius:16px;font-size:12px;cursor:pointer;transition:all .2s ease;
+}
+.chip:hover{background:rgba(50,216,255,.2);transform:translateY(-1px)}
+.input{display:flex;gap:10px;margin-top:14px}
+.input input{
+  flex:1;background:#091a2d;border:1px solid var(--line);color:white;
+  padding:13px 16px;border-radius:11px;outline:none;font-size:13.5px;
+}
+.input input:focus{border-color:var(--cyan)}
+
+.sectionTitle{margin:26px 0 12px;font-size:17px;font-weight:700;color:var(--text)}
+
+/* Toast */
+.toast{
+  position:fixed;right:25px;bottom:25px;background:#0d2338;border:1px solid var(--cyan);
+  padding:14px 20px;border-radius:12px;display:none;box-shadow:0 15px 40px rgba(0,0,0,.5);
+  font-size:13px;z-index:9999;animation:toastIn .25s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.toast.warn{border-color:var(--orange)}
+.toast.danger{border-color:var(--red)}
+
+@media(max-width:1100px){
+  .side{width:210px}.stats{grid-template-columns:repeat(2,1fr)}
+  .two,.three{grid-template-columns:1fr}.main{padding:20px}
+  .top{gap:15px;align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="logo"><div class="logoMark">⚓</div> PortVision AI</div>
+  <nav class="nav">
+    <button class="active" onclick="show('dashboard',this)">◈ Command Center</button>
+    <button onclick="show('congestion',this)">◉ Congestion Forecast</button>
+    <button onclick="show('vessels',this)">🚢 Vessel Schedule</button>
+    <button onclick="show('optimizer',this)">⚙ Berth & Crane Optimizer</button>
+    <button onclick="show('plan',this)">◷ 72-Hour Plan</button>
+    <button onclick="show('copilot',this)">✦ AI Copilot</button>
+  </nav>
+  <div class="status">
+    <div style="display:flex;align-items:center"><span class="dot"></span><b>Port systems online</b></div>
+    <div class="tiny" id="statusSync">AI Model: L1 Predictor (Active)</div>
+  </div>
+</aside>
+
+<main class="main">
+<div class="top">
+  <div>
+    <h1 id="title">Port Command Center</h1>
+    <div class="sub" id="subtitle">AI-powered congestion prediction and port operations planning</div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="simBtn" onclick="simulate()">⚡ Simulate disruption</button>
+    <button class="btn primary" id="optBtn" onclick="optimize()">✦ Optimize port</button>
+    <button class="btn" onclick="resetState()" title="Reset to baseline forecast">↺ Reset</button>
+  </div>
+</div>
+
+<!-- PAGE 1: COMMAND CENTER -->
+<section id="dashboard" class="page active">
+  <div class="grid stats">
+    <div class="card">
+      <div class="label">Vessels today</div>
+      <div class="value" id="vesselsToday">42</div>
+      <div class="tiny green" id="vesselsTrend">↑ 8% vs forecast</div>
+    </div>
+    <div class="card">
+      <div class="label">Waiting vessels</div>
+      <div class="value red" id="waiting">8</div>
+      <div class="tiny" id="waitingSub">Average wait 4.6h</div>
+    </div>
+    <div class="card">
+      <div class="label">Berth utilization</div>
+      <div class="value orange" id="berthUtil">87%</div>
+      <div class="tiny" id="berthSub">3 of 4 berths active</div>
+    </div>
+    <div class="card">
+      <div class="label">Crane utilization</div>
+      <div class="value cyan" id="craneUtil">79%</div>
+      <div class="tiny" id="craneSub">11 of 14 available</div>
+    </div>
+    <div class="card">
+      <div class="label">Congestion risk</div>
+      <div class="value red" id="risk">HIGH</div>
+      <div class="tiny" id="riskWindow">Peak: 10 AM–2 PM</div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2>Live Port Flow <span class="tiny">• simulated operations</span></h2>
+      <div class="map">
+        <div class="sea"></div>
+        <div class="route pulse" style="left:15%;top:65%;width:58%;transform:rotate(-18deg)"></div>
+        <div class="route" style="left:35%;top:26%;width:40%;transform:rotate(38deg);opacity:.45"></div>
+        <div class="node" style="left:12%;top:57%" onclick="toast('Vessel Lane: Inbound transit zone (3 vessels queueing)','info')">🚢<span>Vessel lane</span></div>
+        <div class="node" style="left:70%;top:38%" onclick="toast('Berth Zone A: Large container vessels active','info')">⚓<span>Berth Zone A</span></div>
+        <div class="node" style="left:42%;top:17%" onclick="toast('Berth Zone B: Feeder & medium vessels operating','info')">⚓<span>Berth Zone B</span></div>
+        <div class="node" style="left:73%;top:70%" onclick="toast('Yard: Yard storage capacity at 74%','info')">📦<span>Yard</span></div>
+        <div class="ship" style="left:53%;top:50%" title="V-101 Ocean Star">🚢</div>
+        <div class="ship" style="left:31%;top:62%;animation-delay:.6s" title="V-104 Blue Horizon">🚢</div>
+        <div class="ship" style="left:63%;top:26%;animation-delay:1.2s" title="V-109 Pacific Pearl">🚢</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>AI Situation Brief</h2>
+      <div class="alert" id="briefAlert1">
+        <b>🔴 Congestion window detected</b>
+        14 vessels are forecast to arrive while only 3 compatible berths are available.
+      </div>
+      <div class="alert" id="briefAlert2" style="background:rgba(255,184,77,.08);border-color:rgba(255,184,77,.25)">
+        <b>⚠ Resource pressure</b>
+        Two arriving vessels have high crane requirements.
+      </div>
+      <div class="kpi">
+        <span>72h planning confidence</span>
+        <div class="circle"><b id="confidenceVal">87%</b></div>
+      </div>
+      <button class="btn primary" style="width:100%;margin-top:10px" onclick="askCopilotFromDashboard('Why is congestion high tomorrow?')">Ask PortVision AI →</button>
+    </div>
+  </div>
+
+  <div class="grid three">
+    <div class="card">
+      <h2>Congestion trend</h2>
+      <div class="value red" id="trendVal">78%</div>
+      <div class="tiny" id="trendSub">Predicted peak tomorrow</div>
+      <div class="bar"><div class="fill" id="trendBar" style="width:78%"></div></div>
+    </div>
+    <div class="card">
+      <h2>Average wait</h2>
+      <div class="value" id="waitHours">4.6 h</div>
+      <div class="tiny green" id="waitDiff">↓ 2.1 h after optimization</div>
+    </div>
+    <div class="card">
+      <h2>Recommended action</h2>
+      <div class="tiny" id="recActionText" style="font-size:13.5px;margin-top:8px;line-height:1.5">
+        Reschedule V-104 by 90 min and reassign Berth C to V-109 to prevent pier deadlock.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 2: CONGESTION FORECAST -->
+<section id="congestion" class="page">
+  <div class="card">
+    <h2>🔮 72-Hour Congestion Forecast</h2>
+    <div class="tiny">Forecast generated from vessel schedule, berth capacity and historical ML simulations.</div>
+    <div class="sectionTitle">Hourly Risk Profile (Next 24h Windows)</div>
+    <div class="timeline" id="riskTimeline"></div>
+    
+    <div class="sectionTitle">Critical Operational Windows</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Window</th><th>Risk</th><th>Expected arrivals</th><th>Compatible berths</th><th>AI insight</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>08:00–10:00</td><td><span class="pill">LOW</span></td><td>5</td><td>4</td><td>Normal flow, smooth berthing</td></tr>
+          <tr><td>10:00–14:00</td><td><span class="pill danger">HIGH</span></td><td>14</td><td>3</td><td>Likely queue formation without reschedule</td></tr>
+          <tr><td>14:00–18:00</td><td><span class="pill warn">MEDIUM</span></td><td>9</td><td>4</td><td>Backlog clearing with dual crane deployment</td></tr>
+          <tr><td>18:00–22:00</td><td><span class="pill">LOW</span></td><td>4</td><td>4</td><td>Stable yard transfer rate</td></tr>
+          <tr><td>22:00–04:00 (+1d)</td><td><span class="pill">LOW</span></td><td>3</td><td>4</td><td>Night operations nominal</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 3: VESSEL SCHEDULE -->
+<section id="vessels" class="page">
+  <div class="card">
+    <h2>🚢 Priority-Aware Vessel Schedule</h2>
+    <div class="tiny">Incoming vessel queue with AI priority dispatch suggestions. Click any action to execute.</div>
+    <div class="table-wrap" style="margin-top:14px">
+      <table id="vesselTable">
+        <thead>
+          <tr><th>Vessel</th><th>Arrival</th><th>Size</th><th>Containers</th><th>Berth</th><th>Risk</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>V-101</b> Ocean Star</td>
+            <td>08:00</td>
+            <td>Large</td>
+            <td>2,500</td>
+            <td><span class="pill">Berth A</span></td>
+            <td><span class="pill">LOW</span></td>
+            <td><button class="pill pill-btn" onclick="executeVesselAction('V-101','Proceed','Cleared for immediate docking at Berth A.')">Proceed</button></td>
+          </tr>
+          <tr>
+            <td><b>V-104</b> Blue Horizon</td>
+            <td>09:15</td>
+            <td>Large</td>
+            <td>3,100</td>
+            <td><span class="pill warn">— (Hold)</span></td>
+            <td><span class="pill danger">HIGH</span></td>
+            <td><button class="pill danger pill-btn" onclick="executeVesselAction('V-104','Reschedule','Rescheduled by +90 min to 10:45 to avoid peak bottleneck.')">Reschedule</button></td>
+          </tr>
+          <tr>
+            <td><b>V-109</b> Pacific Pearl</td>
+            <td>10:00</td>
+            <td>Medium</td>
+            <td>1,700</td>
+            <td><span class="pill">Berth B</span></td>
+            <td><span class="pill danger">HIGH</span></td>
+            <td><button class="pill warn pill-btn" onclick="executeVesselAction('V-109','Prioritize','Priority elevated. Pre-assigned Berth B with dual cranes.')">Prioritize</button></td>
+          </tr>
+          <tr>
+            <td><b>V-112</b> Sea Falcon</td>
+            <td>11:30</td>
+            <td>Small</td>
+            <td>850</td>
+            <td><span class="pill">Berth C</span></td>
+            <td><span class="pill warn">MEDIUM</span></td>
+            <td><button class="pill pill-btn" onclick="executeVesselAction('V-112','Monitor','Monitoring approach speed; expected on schedule.')">Monitor</button></td>
+          </tr>
+          <tr>
+            <td><b>V-118</b> Coral Wind</td>
+            <td>14:00</td>
+            <td>Medium</td>
+            <td>1,450</td>
+            <td><span class="pill warn">Berth D (Queue)</span></td>
+            <td><span class="pill warn">MEDIUM</span></td>
+            <td><button class="pill pill-btn" onclick="executeVesselAction('V-118','Queue','En route to anchorage point 2; pilot dispatch at 13:45.')">Queue</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 4: BERTH & CRANE OPTIMIZER -->
+<section id="optimizer" class="page">
+  <div class="grid two">
+    <div class="card">
+      <h2>⚓ Optimized Berth Assignment</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Berth</th><th>Vessel</th><th>Start</th><th>End</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Berth A</b></td><td>V-101 (Ocean Star)</td><td>08:00</td><td>13:00</td><td><span class="pill">DOCKED</span></td></tr>
+            <tr><td><b>Berth B</b></td><td>V-109 (Pacific Pearl)</td><td>10:00</td><td>13:00</td><td><span class="pill">RESERVED</span></td></tr>
+            <tr><td><b>Berth C</b></td><td>V-112 (Sea Falcon)</td><td>11:30</td><td>14:00</td><td><span class="pill">SCHEDULED</span></td></tr>
+            <tr><td><b>Berth D</b></td><td>V-118 (Coral Wind)</td><td>14:00</td><td>17:30</td><td><span class="pill warn">STANDBY</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🏗️ Crane Allocation Engine</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Crane ID</th><th>Assignment</th><th>Throughput</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>C-01</b></td><td>V-101 (Berth A)</td><td>32 moves/h</td><td><span class="pill">ACTIVE</span></td></tr>
+            <tr><td><b>C-02</b></td><td>V-101 (Berth A)</td><td>30 moves/h</td><td><span class="pill">ACTIVE</span></td></tr>
+            <tr><td><b>C-03</b></td><td>V-109 (Berth B)</td><td>28 moves/h</td><td><span class="pill">ACTIVE</span></td></tr>
+            <tr><td><b>C-04</b></td><td>V-109 (Berth B)</td><td>31 moves/h</td><td><span class="pill">ACTIVE</span></td></tr>
+            <tr><td><b>C-05</b></td><td>Standby / Yard Reserve</td><td>Ready</td><td><span class="pill warn">READY</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>📈 Optimization Impact Summary</h2>
+    <div class="grid three">
+      <div>
+        <div class="label">Avg waiting time</div>
+        <div class="value green" id="optWait">4.6h → 2.7h</div>
+        <div class="tiny">41% reduction in idle anchorage</div>
+      </div>
+      <div>
+        <div class="label">Berth utilization</div>
+        <div class="value cyan" id="optBerth">87% → 91%</div>
+        <div class="tiny">Balanced peak distribution</div>
+      </div>
+      <div>
+        <div class="label">Projected queue</div>
+        <div class="value green" id="optQueue">8 → 4 vessels</div>
+        <div class="tiny">Zero anchorage overrun</div>
+      </div>
+    </div>
+    <div class="tiny" style="margin-top:18px;border-top:1px solid var(--line);padding-top:10px">
+      ✦ PortVision Optimization Solver applied: Constraint satisfaction with turn-around time penalties minimized.
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 5: 72-HOUR PLAN -->
+<section id="plan" class="page">
+  <div class="card">
+    <h2>◷ 72-Hour Operations Plan</h2>
+    <div class="tiny">Supervisor-ready actionable schedule generated from the current operational simulation.</div>
+    
+    <div class="sectionTitle">Day 1 — Today</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Action</th><th>Target Resource</th><th>Operational Rationale</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>08:00</td><td>Berth A assignment</td><td>V-101 Ocean Star</td><td>Large-vessel compatibility & early tide window</td></tr>
+          <tr><td>09:15</td><td>Hold V-104 for 90 min</td><td>V-104 Blue Horizon</td><td>Alleviate peak congestion between 10:00–13:00</td></tr>
+          <tr><td>10:00</td><td>Berth B assignment</td><td>V-109 Pacific Pearl</td><td>High container volume requiring dual crane service</td></tr>
+          <tr><td>12:00</td><td>Review crane allocation</td><td>C-05 Reserve Crane</td><td>Resource pressure check before afternoon shift</td></tr>
+          <tr><td>14:00</td><td>Berth D turn-in</td><td>V-118 Coral Wind</td><td>Post-clearance berthing with dedicated yard transit</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sectionTitle">Day 2 — Tomorrow</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Window</th><th>Strategic Plan</th><th>Expected Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>08:00–12:00</td><td>Prioritize 6 arriving container feeders</td><td>Prevent bottleneck before afternoon deep-draft arrivals</td></tr>
+          <tr><td>12:00–16:00</td><td>Deploy tandem crane spreads on berths A & C</td><td>Reduce average dwell time below 3.0 hours</td></tr>
+          <tr><td>16:00–20:00</td><td>Buffer yard blocks 4 & 5 for outbound train loading</td><td>Maintain free yard capacity above 25%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sectionTitle">Day 3 — Extended Horizon</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Window</th><th>Strategic Plan</th><th>Expected Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>08:00–18:00</td><td>Pre-clearance inspections & scheduled maintenance for Crane C-05</td><td>Zero downtime during subsequent week vessel clusters</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 6: AI COPILOT -->
+<section id="copilot" class="page">
+  <div class="card chat">
+    <h2>✦ PortVision AI Copilot</h2>
+    <div class="messages" id="messages">
+      <div class="msg ai">
+        <b>PortVision AI</b><br>
+        Welcome, Supervisor! I analyze port telemetry, forecast congestion hotspots, optimize berth/crane allocations, and draft 72-hour operational directives.
+      </div>
+      <div class="msg ai">
+        <b>Quick questions you can ask:</b>
+        <div class="quick-prompts">
+          <span class="chip" onclick="askPreset('Why is congestion high tomorrow?')">Why is congestion high tomorrow?</span>
+          <span class="chip" onclick="askPreset('Which vessel needs priority?')">Which vessel needs priority?</span>
+          <span class="chip" onclick="askPreset('Give me the next 6-hour action plan.')">Give me the next 6-hour action plan.</span>
+          <span class="chip" onclick="askPreset('What is the berth and crane status?')">What is the berth and crane status?</span>
+        </div>
+      </div>
+    </div>
+    <div class="input">
+      <input id="q" placeholder="Ask PortVision AI anything about vessels, berths, or schedules..." onkeydown="if(event.key==='Enter')ask()">
+      <button class="btn primary" onclick="ask()">Send</button>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const titles={
+  dashboard:["Port Command Center","AI-powered congestion prediction and port operations planning"],
+  congestion:["Congestion Forecast","See where and when vessel queues are likely to form"],
+  vessels:["Vessel Schedule","Priority-aware vessel arrivals and recommended actions"],
+  optimizer:["Berth & Crane Optimizer","AI-assisted resource allocation to reduce waiting time"],
+  plan:["72-Hour Operations Plan","A supervisor-ready plan generated from the current scenario"],
+  copilot:["AI Copilot","Ask questions and receive explainable operational recommendations"]
+};
+
+let toastTimeout = null;
+let currentMode = 'baseline'; // 'baseline', 'disrupted', 'optimized'
+
+function show(id, btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  if(btn){
+    btn.classList.add('active');
+  } else {
+    // Find matching button by index or onclick
+    const navButtons = document.querySelectorAll('.nav button');
+    const mapping = {dashboard:0, congestion:1, vessels:2, optimizer:3, plan:4, copilot:5};
+    if(mapping[id] !== undefined && navButtons[mapping[id]]) {
+      navButtons[mapping[id]].classList.add('active');
+    }
+  }
+
+  if(titles[id]){
+    document.getElementById('title').textContent = titles[id][0];
+    document.getElementById('subtitle').textContent = titles[id][1];
+  }
+  
+  if(id === 'congestion') buildTimeline();
+}
+
+function buildTimeline(){
+  const el = document.getElementById('riskTimeline');
+  if(!el) return;
+  el.innerHTML = '';
+  
+  // Baseline slots
+  let vals = ['low','low','med','high','high','high','med','low','low','med','low','low'];
+  if(currentMode === 'disrupted'){
+    vals = ['med','high','high','high','high','high','med','med','low','low','low','low'];
+  } else if(currentMode === 'optimized'){
+    vals = ['low','low','low','med','med','low','low','low','low','low','low','low'];
+  }
+
+  vals.forEach((v, i) => {
+    let d = document.createElement('div');
+    d.className = 'slot ' + (v === 'high' ? 'hot' : v === 'med' ? 'busy' : '');
+    
+    // Correct 24-hour clock formatting
+    const rawHour = i * 2 + 6;
+    const hour = rawHour % 24;
+    const isNextDay = rawHour >= 24;
+    const timeStr = String(hour).padStart(2, '0') + ':00' + (isNextDay ? ' (+1d)' : '');
+    
+    d.innerHTML = `<span class="tag">${v.toUpperCase()}</span><small>${timeStr}</small>`;
+    d.title = `Time window: ${timeStr} | Predicted Risk: ${v.toUpperCase()} | Mode: ${currentMode}`;
+    d.onclick = () => {
+      toast(`Window ${timeStr}: ${v.toUpperCase()} Risk (${v === 'high' ? '14 vessels / 3 berths' : v === 'med' ? '9 vessels / 4 berths' : 'Normal flow'})`, v === 'high' ? 'danger' : 'info');
+    };
+    el.appendChild(d);
+  });
+}
+
+function toast(text, type = 'info'){
+  const x = document.getElementById('toast');
+  if(!x) return;
+  
+  if(toastTimeout){
+    clearTimeout(toastTimeout);
+  }
+  
+  x.className = 'toast ' + (type === 'danger' ? 'danger' : type === 'warn' ? 'warn' : '');
+  x.textContent = text;
+  x.style.display = 'block';
+  
+  toastTimeout = setTimeout(() => {
+    x.style.display = 'none';
+  }, 3200);
+}
+
+function simulate(){
+  currentMode = 'disrupted';
+  
+  // Stats
+  const waiting = document.getElementById('waiting');
+  waiting.textContent = '16';
+  waiting.className = 'value red';
+  document.getElementById('waitingSub').textContent = 'Average wait 7.8h';
+  
+  const risk = document.getElementById('risk');
+  risk.textContent = 'CRITICAL';
+  risk.className = 'value red';
+  document.getElementById('riskWindow').textContent = 'Peak: 09 AM–4 PM';
+  
+  document.getElementById('berthUtil').textContent = '96%';
+  document.getElementById('berthUtil').className = 'value red';
+  document.getElementById('berthSub').textContent = '4 of 4 berths crowded';
+
+  document.getElementById('craneUtil').textContent = '93%';
+  document.getElementById('craneSub').textContent = '13 of 14 operating';
+
+  // Trends & briefs
+  document.getElementById('trendVal').textContent = '94%';
+  document.getElementById('trendVal').className = 'value red';
+  document.getElementById('trendSub').textContent = 'Severe bottleneck warning';
+  document.getElementById('trendBar').style.width = '94%';
+  
+  document.getElementById('waitHours').textContent = '7.8 h';
+  const waitDiff = document.getElementById('waitDiff');
+  waitDiff.textContent = '↑ 3.2 h queue delay';
+  waitDiff.className = 'tiny red';
+
+  document.getElementById('recActionText').textContent = 'CRITICAL: Berth capacity exceeded. Implement emergency holds on incoming vessels and request off-peak anchorage.';
+
+  document.getElementById('briefAlert1').innerHTML = '<b>🔴 Critical congestion alert</b> Unplanned delay in Berth A has caused incoming vessel backlog to surge to 16 vessels.';
+  document.getElementById('briefAlert2').innerHTML = '<b>⚠ Crane deadlock risk</b> High-container vessels cannot be serviced in parallel without crane reallocation.';
+
+  buildTimeline();
+  toast('⚠ Simulated disruption added: congestion risk CRITICAL (16 vessels waiting).', 'danger');
+}
+
+function optimize(){
+  currentMode = 'optimized';
+
+  // Stats
+  const waiting = document.getElementById('waiting');
+  waiting.textContent = '4';
+  waiting.className = 'value green';
+  document.getElementById('waitingSub').textContent = 'Average wait 2.7h';
+
+  const risk = document.getElementById('risk');
+  risk.textContent = 'MEDIUM';
+  risk.className = 'value orange';
+  document.getElementById('riskWindow').textContent = 'Peak: Normalized';
+
+  document.getElementById('berthUtil').textContent = '82%';
+  document.getElementById('berthUtil').className = 'value green';
+  document.getElementById('berthSub').textContent = 'Dynamic allocation active';
+
+  document.getElementById('craneUtil').textContent = '71%';
+  document.getElementById('craneSub').textContent = '10 of 14 active, 4 standby';
+
+  // Trends & briefs
+  document.getElementById('trendVal').textContent = '42%';
+  document.getElementById('trendVal').className = 'value green';
+  document.getElementById('trendSub').textContent = 'Congestion risk controlled';
+  document.getElementById('trendBar').style.width = '42%';
+
+  document.getElementById('waitHours').textContent = '2.7 h';
+  const waitDiff = document.getElementById('waitDiff');
+  waitDiff.textContent = '↓ 1.9 h saved vs baseline';
+  waitDiff.className = 'tiny green';
+
+  document.getElementById('recActionText').textContent = 'Optimized: V-104 shifted +90 min, Berth B allocated to V-109, and twin cranes mobilized.';
+
+  document.getElementById('briefAlert1').innerHTML = '<b>🟢 Operational Flow Optimized</b> Congestion window mitigated. Average wait time reduced by 41%.';
+  document.getElementById('briefAlert2').innerHTML = '<b>✦ Balanced Resource Deployment</b> Crane and berth assignments balanced across all 4 zones.';
+
+  buildTimeline();
+  toast('✦ Optimization complete: simulated queue reduced to 4 vessels.', 'info');
+}
+
+function resetState(){
+  currentMode = 'baseline';
+
+  document.getElementById('waiting').textContent = '8';
+  document.getElementById('waiting').className = 'value red';
+  document.getElementById('waitingSub').textContent = 'Average wait 4.6h';
+
+  document.getElementById('risk').textContent = 'HIGH';
+  document.getElementById('risk').className = 'value red';
+  document.getElementById('riskWindow').textContent = 'Peak: 10 AM–2 PM';
+
+  document.getElementById('berthUtil').textContent = '87%';
+  document.getElementById('berthUtil').className = 'value orange';
+  document.getElementById('berthSub').textContent = '3 of 4 berths active';
+
+  document.getElementById('craneUtil').textContent = '79%';
+  document.getElementById('craneSub').textContent = '11 of 14 available';
+
+  document.getElementById('trendVal').textContent = '78%';
+  document.getElementById('trendVal').className = 'value red';
+  document.getElementById('trendSub').textContent = 'Predicted peak tomorrow';
+  document.getElementById('trendBar').style.width = '78%';
+
+  document.getElementById('waitHours').textContent = '4.6 h';
+  const waitDiff = document.getElementById('waitDiff');
+  waitDiff.textContent = '↓ 2.1 h after optimization';
+  waitDiff.className = 'tiny green';
+
+  document.getElementById('recActionText').textContent = 'Reschedule V-104 by 90 min and reassign Berth C to V-109 to prevent pier deadlock.';
+
+  document.getElementById('briefAlert1').innerHTML = '<b>🔴 Congestion window detected</b> 14 vessels are forecast to arrive while only 3 compatible berths are available.';
+  document.getElementById('briefAlert2').innerHTML = '<b>⚠ Resource pressure</b> Two arriving vessels have high crane requirements.';
+
+  buildTimeline();
+  toast('↺ Reset to baseline forecast state.', 'info');
+}
+
+function escapeHTML(str){
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
+}
+
+function executeVesselAction(vesselId, actionName, message){
+  toast(`Action executed for ${vesselId} [${actionName}]: ${message}`, 'info');
+}
+
+function askCopilotFromDashboard(question){
+  show('copilot');
+  askPreset(question);
+}
+
+function askPreset(question){
+  const inp = document.getElementById('q');
+  inp.value = question;
+  ask();
+}
+
+function ask(){
+  const inp = document.getElementById('q');
+  const q = inp.value.trim();
+  if(!q) return;
+
+  const box = document.getElementById('messages');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = q;
+  box.appendChild(userMsg);
+
+  let a = "The forecast shows a high-risk window from 10:00–14:00 because 14 vessels are expected while only 3 compatible berths are available. I recommend prioritizing high-volume vessels, shifting one large vessel by 90 minutes, and reallocating cranes during the peak.";
+
+  if(/why|congestion|high|tomorrow|forecast/i.test(q)){
+    a = "The forecast identifies a critical congestion spike between 10:00 and 14:00: 14 arrivals overlap with only 3 active berths. Historical trends indicate that without intervention, queue delay escalates to 7.8 hours. By shifting V-104 by 90 minutes and activating Crane C-05, we reduce queue length by over 50%.";
+  } else if(/priority|which vessel|vessel/i.test(q)){
+    a = "V-104 (Blue Horizon, 3,100 containers) has the highest immediate risk profile because of its large draft and peak arrival time. V-109 (Pacific Pearl) should receive secondary priority at Berth B due to tight crane turnover deadlines.";
+  } else if(/plan|action|next|6-hour|directive/i.test(q)){
+    a = "Next 6-Hour Operational Plan:<br>1. <b>08:00</b> — Dock V-101 at Berth A with Cranes C-01 & C-02.<br>2. <b>09:15</b> — Hold V-104 for +90 min to bypass peak queue.<br>3. <b>10:00</b> — Position V-109 at Berth B with Cranes C-03 & C-04.<br>4. <b>12:00</b> — Inspect standby crane C-05 for afternoon yard assist.<br>5. <b>14:00</b> — Berth V-118 upon V-101 departure.";
+  } else if(/berth|crane|resource|status/i.test(q)){
+    a = "Resource Status Summary:<br>• Berths: 3 of 4 active (A: Ocean Star, B: Pacific Pearl, C: Sea Falcon).<br>• Cranes: 4 active (C-01 to C-04), 1 on standby (C-05 ready for rapid mobilization).<br>• Current Utilization: Berths 87%, Cranes 79%.";
+  } else if(/hello|hi|help|who are you/i.test(q)){
+    a = "Hello! I am PortVision AI, your decision-support copilot for marine terminal and container operations. Ask me about vessel priorities, berth schedules, crane bottlenecks, or to simulate alternate schedules.";
+  }
+
+  const aiMsg = document.createElement('div');
+  aiMsg.className = 'msg ai';
+  aiMsg.innerHTML = `<b>PortVision AI</b><br>${a}`;
+  box.appendChild(aiMsg);
+
+  inp.value = '';
+  box.scrollTop = box.scrollHeight;
+}
+
+// Initial setup
+buildTimeline();
+</script>
+</body>
+</html>
