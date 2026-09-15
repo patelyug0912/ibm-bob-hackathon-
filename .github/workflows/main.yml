@@ -1,0 +1,45 @@
+name: Validate Submission
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        run: |
+          echo "Checking required files..."
+
+          if [ ! -f "submission.yaml" ]; then
+            echo "❌ Missing: submission.yaml"
+            exit 1
+          fi
+
+          if [ ! -f "demo/demo-video-link.txt" ]; then
+            echo "❌ Missing: demo/demo-video-link.txt"
+            exit 1
+          fi
+
+          echo "✅ All required files exist!"
+
+      - name: Validate submission.yaml
+        run: |
+          python - <<'PY'
+          import yaml
+
+          with open("submission.yaml", "r") as file:
+              data = yaml.safe_load(file)
+
+          print("✅ submission.yaml is valid YAML")
+          print(data)
+          PY
