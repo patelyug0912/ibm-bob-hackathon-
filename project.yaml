@@ -1,0 +1,270 @@
+# ==============================================================================
+# PortVision AI — Project Configuration & Specification Manifest
+# Level 1: Container Congestion Predictor & Port Operations Optimizer
+# ==============================================================================
+
+project:
+  name: "PortVision AI"
+  version: "1.0.0"
+  tier: "L1 Hackathon Prototype"
+  edition: "Command Center & Decision Support System"
+  description: >
+    AI-powered maritime terminal operations optimizer that predicts container
+    congestion hotspots, generates 72-hour operational shift plans, and optimizes
+    berth and crane assignments.
+  author: "PortVision AI Team"
+  repository: "PortVision_AI_L1_Hackathon_Package"
+  license: "MIT"
+
+# ------------------------------------------------------------------------------
+# Runtime & Server Configuration
+# ------------------------------------------------------------------------------
+server:
+  host: "0.0.0.0"
+  port: 8080
+  default_document: "index.html"
+  entrypoints:
+    - "index.html"
+    - "PortVision_AI_L1.html"
+  cors_enabled: true
+  compression: true
+  static_directories:
+    - path: "/"
+      serve_index: true
+    - path: "/PortVision_demo"
+      serve_index: false
+
+# ------------------------------------------------------------------------------
+# Core Application Modules
+# ------------------------------------------------------------------------------
+modules:
+  - id: "dashboard"
+    name: "Command Center"
+    icon: "◈"
+    description: "Live terminal situational awareness, KPI telemetry, and port flow map."
+    route: "#dashboard"
+
+  - id: "congestion"
+    name: "Congestion Forecast"
+    icon: "◉"
+    description: "72-hour congestion window prediction with 24-hour interval risk timeline."
+    route: "#congestion"
+
+  - id: "vessels"
+    name: "Vessel Schedule"
+    icon: "🚢"
+    description: "Priority-aware queue dispatching with live supervisor action triggers."
+    route: "#vessels"
+
+  - id: "optimizer"
+    name: "Berth & Crane Optimizer"
+    icon: "⚙"
+    description: "AI-assisted resource allocation engine balancing vessel draft and crane throughput."
+    route: "#optimizer"
+
+  - id: "plan"
+    name: "72-Hour Plan"
+    icon: "◷"
+    description: "Supervisor-ready shift directives detailing berth assignments and buffer actions."
+    route: "#plan"
+
+  - id: "copilot"
+    name: "AI Copilot"
+    icon: "✦"
+    description: "Natural language decision support assistant for terminal shift managers."
+    route: "#copilot"
+
+# ------------------------------------------------------------------------------
+# Data Models & Schemas
+# ------------------------------------------------------------------------------
+data_models:
+  vessels:
+    schema:
+      vessel_id: "string (e.g., V-101)"
+      name: "string (e.g., Ocean Star)"
+      arrival_time: "string (HH:MM)"
+      departure_time: "string (HH:MM)"
+      size_class: "enum [Small, Medium, Large, Ultra-Large]"
+      container_count: "integer (TEU)"
+      assigned_berth: "string [A, B, C, D, Hold]"
+      priority_rank: "enum [LOW, MEDIUM, HIGH, CRITICAL]"
+      recommended_action: "enum [Proceed, Reschedule, Prioritize, Monitor, Queue]"
+    default_records:
+      - vessel_id: "V-101"
+        name: "Ocean Star"
+        arrival_time: "08:00"
+        size_class: "Large"
+        container_count: 2500
+        assigned_berth: "Berth A"
+        risk: "LOW"
+        action: "Proceed"
+      - vessel_id: "V-104"
+        name: "Blue Horizon"
+        arrival_time: "09:15"
+        size_class: "Large"
+        container_count: 3100
+        assigned_berth: "Hold"
+        risk: "HIGH"
+        action: "Reschedule"
+      - vessel_id: "V-109"
+        name: "Pacific Pearl"
+        arrival_time: "10:00"
+        size_class: "Medium"
+        container_count: 1700
+        assigned_berth: "Berth B"
+        risk: "HIGH"
+        action: "Prioritize"
+      - vessel_id: "V-112"
+        name: "Sea Falcon"
+        arrival_time: "11:30"
+        size_class: "Small"
+        container_count: 850
+        assigned_berth: "Berth C"
+        risk: "MEDIUM"
+        action: "Monitor"
+      - vessel_id: "V-118"
+        name: "Coral Wind"
+        arrival_time: "14:00"
+        size_class: "Medium"
+        container_count: 1450
+        assigned_berth: "Berth D"
+        risk: "MEDIUM"
+        action: "Queue"
+
+  berths:
+    schema:
+      berth_id: "string (Berth A, B, C, D)"
+      max_draft_meters: "float"
+      max_vessel_size: "string"
+      crane_tracks: "integer"
+      current_status: "enum [DOCKED, RESERVED, SCHEDULED, STANDBY]"
+      active_vessel: "string (nullable)"
+    resources:
+      - berth_id: "Berth A"
+        max_draft_meters: 16.5
+        max_vessel_size: "Large"
+        cranes_assigned: ["C-01", "C-02"]
+        status: "DOCKED"
+      - berth_id: "Berth B"
+        max_draft_meters: 14.0
+        max_vessel_size: "Medium"
+        cranes_assigned: ["C-03", "C-04"]
+        status: "RESERVED"
+      - berth_id: "Berth C"
+        max_draft_meters: 12.0
+        max_vessel_size: "Small"
+        cranes_assigned: []
+        status: "SCHEDULED"
+      - berth_id: "Berth D"
+        max_draft_meters: 14.5
+        max_vessel_size: "Medium"
+        cranes_assigned: []
+        status: "STANDBY"
+
+  cranes:
+    schema:
+      crane_id: "string (C-01 to C-05)"
+      type: "enum [Super Post-Panamax, Post-Panamax, Mobile Harbor]"
+      capacity_moves_per_hour: "integer"
+      status: "enum [ACTIVE, READY, MAINTENANCE]"
+      current_berth: "string"
+    inventory:
+      - crane_id: "C-01"
+        type: "Super Post-Panamax"
+        throughput: "32 moves/h"
+        status: "ACTIVE"
+        berth: "Berth A"
+      - crane_id: "C-02"
+        type: "Super Post-Panamax"
+        throughput: "30 moves/h"
+        status: "ACTIVE"
+        berth: "Berth A"
+      - crane_id: "C-03"
+        type: "Post-Panamax"
+        throughput: "28 moves/h"
+        status: "ACTIVE"
+        berth: "Berth B"
+      - crane_id: "C-04"
+        type: "Post-Panamax"
+        throughput: "31 moves/h"
+        status: "ACTIVE"
+        berth: "Berth B"
+      - crane_id: "C-05"
+        type: "Mobile Harbor Reserve"
+        throughput: "26 moves/h"
+        status: "READY"
+        berth: "Standby / Yard"
+
+# ------------------------------------------------------------------------------
+# Operational Simulation States
+# ------------------------------------------------------------------------------
+simulation_states:
+  baseline:
+    vessels_today: 42
+    waiting_vessels: 8
+    berth_utilization_pct: 87
+    crane_utilization_pct: 79
+    congestion_risk: "HIGH"
+    avg_wait_hours: 4.6
+    predicted_peak_trend_pct: 78
+    recommendation: "Reschedule V-104 by 90 min and reassign Berth C to V-109."
+
+  disrupted:
+    vessels_today: 42
+    waiting_vessels: 16
+    berth_utilization_pct: 96
+    crane_utilization_pct: 93
+    congestion_risk: "CRITICAL"
+    avg_wait_hours: 7.8
+    wait_time_delta: "+3.2 h"
+    predicted_peak_trend_pct: 94
+    recommendation: "Emergency hold on incoming vessels; dispatch anchor waiting queue."
+
+  optimized:
+    vessels_today: 42
+    waiting_vessels: 4
+    berth_utilization_pct: 82
+    crane_utilization_pct: 71
+    congestion_risk: "MEDIUM"
+    avg_wait_hours: 2.7
+    wait_time_delta: "-1.9 h"
+    predicted_peak_trend_pct: 42
+    recommendation: "V-104 shifted +90 min, Berth B allocated to V-109, twin cranes mobilized."
+
+# ------------------------------------------------------------------------------
+# AI Copilot Knowledge Base & Queries
+# ------------------------------------------------------------------------------
+ai_copilot:
+  model_name: "PortVision L1 Neural Copilot"
+  max_context_turns: 10
+  preset_questions:
+    - prompt: "Why is congestion high tomorrow?"
+      category: "Congestion Analysis"
+      summary: "14 arrivals bottlenecked across 3 active berths between 10:00–14:00."
+
+    - prompt: "Which vessel needs priority?"
+      category: "Vessel Priority"
+      summary: "V-104 (Blue Horizon) requires hold/reschedule; V-109 needs dual crane service."
+
+    - prompt: "Give me the next 6-hour action plan."
+      category: "Shift Directives"
+      summary: "Sequence Berth A, B, C berthing with staggered crane assignments."
+
+    - prompt: "What is the berth and crane status?"
+      category: "Resource Status"
+      summary: "3 of 4 berths active (87% util); 4 of 5 cranes active (79% util)."
+
+# ------------------------------------------------------------------------------
+# Optimization Engine Constraints
+# ------------------------------------------------------------------------------
+optimizer_rules:
+  objective_function: "minimize(total_vessel_anchorage_delay + crane_idle_cost)"
+  constraints:
+    - rule: "vessel_draft <= berth_max_draft"
+      enforced: true
+    - rule: "large_vessels_require_minimum_cranes: 2"
+      enforced: true
+    - rule: "maximum_reschedule_shift_minutes: 120"
+      enforced: true
+    - rule: "minimum_yard_buffer_capacity_pct: 20"
+      enforced: true

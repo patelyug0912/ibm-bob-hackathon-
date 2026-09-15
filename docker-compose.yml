@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  portvision-ai:
+    image: python:3.11-alpine
+    container_name: portvision_ai_service
+    working_dir: /app
+    volumes:
+      - ./:/app:ro
+    ports:
+      - "8080:8080"
+    command: python -m http.server 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
